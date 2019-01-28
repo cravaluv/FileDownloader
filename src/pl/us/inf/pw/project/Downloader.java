@@ -1,7 +1,10 @@
 package pl.us.inf.pw.project;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
@@ -9,30 +12,50 @@ import java.util.Date;
 public class Downloader implements Runnable {
 
     private String url;
+    private String name;
     private Date startDate;
 
     //////////////////////////
     //  CONSTRUCTOR
     /////////////////////////
-    public Downloader(String url) {
+    public Downloader(String url, String name) {
         this.url = url;
         this.startDate = new Date();
+        this.name = name;
     }
 
     @Override
     public void run() {
+        URL website = null;
         try {
-            URL website = new URL(this.url);
-            ReadableByteChannel rbc;
-            rbc = java.nio.channels.Channels.newChannel(website.openStream());
-            FileOutputStream fos = new FileOutputStream("C:\\STUDIA\\FileDownloader");
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            website = new URL(this.url);
+
+        String downloadedFileName = this.name;
+            InputStream is = website.openStream();
+
+            // Stream to the destionation file
+            FileOutputStream fos = new FileOutputStream("D:/STUDIA" + "/" + downloadedFileName);
+
+            // Read bytes from URL to the local file
+            byte[] buffer = new byte[4096];
+            int bytesRead = 0;
+
+            System.out.println("Downloading " + downloadedFileName);
+            while ((bytesRead = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+
+            // Close destination stream
             fos.close();
-            rbc.close();
+            // Close URL stream
+            is.close();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     //////////////////////////
